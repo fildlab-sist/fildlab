@@ -1,0 +1,96 @@
+<div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+  <!-- Encabezado de Repuestos -->
+  <div class="flex items-center justify-between">
+    <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+      Repuestos Utilizados
+    </h3>
+
+    <!-- Botón Agregar Repuesto -->
+    <button
+      type="button"
+      (click)="toggleAddMode()"
+      class="text-xs font-semibold px-2.5 py-1 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors"
+    >
+      <span>{{ isAdding ? 'Cerrar' : '+ Agregar' }}</span>
+    </button>
+  </div>
+
+  <!-- Selector para Agregar Nuevo Repuesto del Catálogo Móvil -->
+  <div *ngIf="isAdding" class="p-3 bg-sky-50/60 border border-sky-200 rounded-xl space-y-2">
+    <label class="block text-[11px] font-bold text-sky-900">
+      Seleccionar repuesto:
+    </label>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <select
+        [(ngModel)]="selectedCatalogId"
+        class="flex-1 text-xs px-2.5 py-2 bg-white border border-sky-300 rounded-lg font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+      >
+        <option *ngFor="let item of availableCatalog" [value]="item.id">
+          {{ item.name }} — S/. {{ item.unitCost }} (Disp: {{ item.stockVan }})
+        </option>
+      </select>
+      <button
+        type="button"
+        (click)="addSelectedPart()"
+        [disabled]="!selectedCatalogId"
+        class="text-xs font-bold px-3 py-2 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white rounded-lg transition-colors whitespace-nowrap"
+      >
+        Agregar
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de Repuestos Seleccionados -->
+  <div *ngIf="selectedSpares.length > 0" class="divide-y divide-slate-100 text-xs">
+    <div *ngFor="let s of selectedSpares; let i = index" class="py-2.5 flex items-center justify-between gap-2">
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-slate-800 text-xs truncate">{{ s.name }}</p>
+        <p class="text-[10px] text-slate-400">S/. {{ s.unitCost }} c/u &bull; Subtotal: S/. {{ s.quantity * s.unitCost }}</p>
+      </div>
+
+      <!-- Control de Cantidad -->
+      <div class="flex items-center gap-1.5">
+        <button
+          type="button"
+          (click)="decrementQuantity(i)"
+          [disabled]="s.quantity <= 1"
+          class="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold flex items-center justify-center text-xs transition-colors"
+        >
+          -
+        </button>
+        <span class="w-6 text-center font-bold text-slate-800 text-xs">{{ s.quantity }}</span>
+        <button
+          type="button"
+          (click)="incrementQuantity(i)"
+          class="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs transition-colors"
+        >
+          +
+        </button>
+
+        <!-- Botón Eliminar -->
+        <button
+          type="button"
+          (click)="removeSpare(i)"
+          class="w-6 h-6 ml-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-xs transition-colors"
+          title="Eliminar"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Totalizador de Repuestos -->
+    <div class="pt-2.5 flex justify-between items-center font-bold text-slate-800 text-xs">
+      <span class="text-slate-500 font-medium text-[11px]">{{ totalItems }} repuestos</span>
+      <span class="text-sky-800 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-lg">
+        Total: S/. {{ totalCost }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Estado Vacío -->
+  <div *ngIf="selectedSpares.length === 0" class="py-3 text-center text-slate-400 text-xs bg-slate-50 rounded-xl">
+    Sin repuestos registrados en esta orden.
+  </div>
+</div>

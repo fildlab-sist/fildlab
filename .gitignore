@@ -1,0 +1,41 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Testing & Cobertura
+coverage/
+
+# Compilación y Builds
+dist/
+build/
+.angular/
+out-tsc/
+
+# Variables de entorno y secretos
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Prisma
+apps/api/prisma/dev.db
+apps/api/prisma/dev.db-journal
+
+# IDEs y SO
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

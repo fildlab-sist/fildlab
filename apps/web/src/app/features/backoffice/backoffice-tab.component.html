@@ -1,0 +1,146 @@
+<div class="space-y-6">
+  <!-- Validador de RUC SUNAT en Vivo -->
+  <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+    <h3 class="text-sm font-bold text-slate-800 mb-2">Consulta y Validación Oficial de RUC (SUNAT)</h3>
+    <p class="text-xs text-slate-500 mb-4">
+      Comprueba en tiempo real la validez del RUC de 11 dígitos para clientes corporativos de salud antes de registrar contratos.
+    </p>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <input
+        type="text"
+        [ngModel]="rucInput"
+        (ngModelChange)="onRucChange($event)"
+        maxlength="11"
+        placeholder="Ingrese RUC de 11 dígitos"
+        class="text-xs px-3 py-2 border rounded-lg w-full sm:w-64 font-mono focus:ring-2 focus:ring-fildlab-500 focus:outline-none"
+      />
+      <span
+        [class]="rucValidation.isValid ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'"
+        class="text-xs px-3 py-1.5 rounded-lg border font-medium flex items-center gap-1.5"
+      >
+        <span class="w-2 h-2 rounded-full" [class]="rucValidation.isValid ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+        {{ rucValidation.isValid ? 'RUC Válido (SUNAT Verificado)' : rucValidation.message }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Bandeja de Órdenes y Liquidación Contable -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div>
+        <h3 class="text-sm font-bold text-slate-800">Bandeja de Auditoría y Operaciones Gerenciales</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Control de contratos, liquidación y salidas de almacén central</p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          (click)="openContractModal()"
+          class="px-3 py-1.5 bg-fildlab-700 hover:bg-fildlab-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+          title="Emitir nuevo contrato de tratamiento de agua o registrar cliente corporativo"
+        >
+          <span>📋</span> Nuevo Contrato / SLA
+        </button>
+        <button
+          type="button"
+          (click)="openDispatchModal()"
+          class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
+          title="Despachar repuestos hacia el almacén móvil del técnico"
+        >
+          <span>📦</span> Despachar Stock
+        </button>
+        <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-medium">
+          Rol: <strong>{{ currentRole }}</strong>
+        </span>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+          <tr>
+            <th class="px-4 py-3">Código Orden</th>
+            <th class="px-4 py-3">Cliente / Sede</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3">SLA Status</th>
+            <th class="px-4 py-3">Costo Repuestos</th>
+            <th class="px-4 py-3">Inmutabilidad</th>
+            <th class="px-4 py-3 text-right">Acciones Gerenciales</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let o of backofficeOrders" class="hover:bg-slate-50/60 transition-colors">
+            <td class="px-4 py-3.5 font-semibold text-slate-900">{{ o.code }}</td>
+            <td class="px-4 py-3.5 text-slate-700">{{ o.client }}</td>
+            <td class="px-4 py-3.5">
+              <span
+                [class]="
+                  o.status === OrderStatus.LIQUIDADA_APROBADA
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                "
+                class="px-2 py-0.5 rounded text-[11px] font-medium border"
+              >
+                {{ o.status === OrderStatus.LIQUIDADA_APROBADA ? 'Liquidada (Inventario Actualizado)' : 'Pendiente de Liquidación' }}
+              </span>
+            </td>
+            <td class="px-4 py-3.5">
+              <app-sla-badge [slaBreached]="o.slaBreached" [delayMinutes]="o.delayMinutes"></app-sla-badge>
+            </td>
+            <td class="px-4 py-3.5 font-mono">S/. {{ o.sparesCost }}</td>
+            <td class="px-4 py-3.5">
+              <span class="inline-flex items-center gap-1 text-[11px] text-slate-600">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-800"></span>
+                Acta Inmutable
+              </span>
+              <span *ngIf="o.hasAddendum" class="block text-[10px] text-purple-700 font-medium">
+                + Con Adenda Legal
+              </span>
+            </td>
+            <td class="px-4 py-3.5 text-right space-x-2">
+              <button
+                type="button"
+                (click)="downloadReportPdf(o)"
+                class="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded text-[11px] font-semibold transition-colors inline-flex items-center gap-1"
+                title="Descargar Acta de Conformidad con Firma Digital y Metadatos Legales (Ley N° 27269)"
+              >
+                <span>📄 PDF Legal</span>
+              </button>
+              <button
+                *ngIf="o.status !== OrderStatus.LIQUIDADA_APROBADA"
+                type="button"
+                (click)="liquidateOrder(o.id)"
+                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold transition-colors"
+              >
+                Liquidar Orden
+              </button>
+              <button
+                type="button"
+                (click)="createAddendum(o.id)"
+                class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-medium transition-colors"
+              >
+                + Adenda
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modales de Negocio Gerencial (REQ-01, REQ-02, REQ-03, REQ-04) -->
+  <app-contract-modal
+    [isOpen]="isContractModalOpen"
+    [clients]="clients"
+    (close)="isContractModalOpen = false"
+    (contractSaved)="onContractSaved($event)"
+    (clientSaved)="onClientSaved($event)"
+  ></app-contract-modal>
+
+  <app-stock-dispatch-modal
+    [isOpen]="isDispatchModalOpen"
+    [workOrders]="backofficeOrders"
+    (close)="isDispatchModalOpen = false"
+    (stockDispatched)="onStockDispatched($event)"
+  ></app-stock-dispatch-modal>
+</div>
+

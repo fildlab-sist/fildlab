@@ -1,0 +1,68 @@
+// ------------------------------------------------------------------------------
+// INVENTARIO Y REPUESTOS EN 3 FASES (REQ-04, REQ-05, REQ-06, RN-03)
+// ------------------------------------------------------------------------------
+
+enum SpareMovementType {
+  ENTRADA_CENTRAL
+  ASIGNACION_A_TECNICO
+  DEVOLUCION_A_CENTRAL
+  CONSUMO_EN_ORDEN
+  AJUSTE_INVENTARIO
+}
+
+model SparePart {
+  id           String   @id @default(uuid())
+  sku          String   @unique
+  name         String
+  description  String?
+  unitMeasure  String   @default("UND") @map("unit_measure")
+  unitCost     Decimal  @map("unit_cost") @db.Decimal(10, 2)
+  salePrice    Decimal  @map("sale_price") @db.Decimal(10, 2)
+  centralStock Int      @default(0) @map("central_stock")
+  minimumStock Int      @default(5) @map("minimum_stock")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  technicianStocks TechnicianStock[]
+  stockMovements   StockMovement[]
+  workOrderSpares  WorkOrderSpare[]
+
+  @@map("spare_parts")
+}
+
+model TechnicianStock {
+  id            String   @id @default(uuid())
+  technicianId  String   @map("technician_id")
+  sparePartId   String   @map("spare_part_id")
+  localQuantity Int      @default(0) @map("local_quantity")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  technician User      @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  sparePart  SparePart @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
+
+  @@unique([technicianId, sparePartId])
+  @@map("technician_stocks")
+}
+
+model StockMovement {
+  id           String            @id @default(uuid())
+  sparePartId  String            @map("spare_part_id")
+  technicianId String?           @map("technician_id")
+  workOrderId  String?           @map("work_order_id")
+  movementType SpareMovementType @map("movement_type")
+  quantity     Int
+  unitCost     Decimal           @map("unit_cost") @db.Decimal(10, 2)
+  notes        String?
+  createdById  String            @map("created_by_id")
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  // Relaciones
+  sparePart SparePart  @relation(fields: [sparePartId], references: [id])
+  createdBy User       @relation("UserStockMovements", fields: [createdById], references: [id])
+  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id])
+
+  @@map("stock_movements")
+}

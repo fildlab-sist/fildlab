@@ -1,0 +1,113 @@
+<div class="space-y-6 max-w-4xl mx-auto">
+  <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+      <div>
+        <h3 class="text-base font-bold text-slate-800">Inferencia de Vida Útil Remanente (RUL) & Scoring de Riesgo</h3>
+        <p class="text-xs text-slate-500">Modelo de Inteligencia Artificial ONNX con supervisión y aislamiento de anomalías físicas</p>
+      </div>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="simulateAnomalousParameters()"
+          class="text-xs px-3 py-1.5 bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 rounded-lg transition-colors font-medium"
+        >
+          Simular Sensor Descalibrado
+        </button>
+        <button
+          type="button"
+          (click)="resetAiParameters()"
+          class="text-xs px-3 py-1.5 bg-fildlab-600 text-white hover:bg-fildlab-700 rounded-lg transition-colors font-medium shadow-xs"
+        >
+          Ejecutar Diagnóstico Predictivo
+        </button>
+      </div>
+    </div>
+
+    <!-- Parámetros de Entrada para la Inferencia -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-50 p-4 rounded-xl mb-4 border border-slate-200">
+      <div>
+        <span class="text-slate-500 block text-[11px]">pH Entrada</span>
+        <input type="number" [(ngModel)]="aiSimulationParams.inletPh" class="w-full mt-1 px-2 py-1 border rounded bg-white" />
+      </div>
+      <div>
+        <span class="text-slate-500 block text-[11px]">Conductividad Out (µS/cm)</span>
+        <input type="number" [(ngModel)]="aiSimulationParams.outletConductivityUs" class="w-full mt-1 px-2 py-1 border rounded bg-white" />
+      </div>
+      <div>
+        <span class="text-slate-500 block text-[11px]">Presión Membrana (PSI)</span>
+        <input type="number" [(ngModel)]="aiSimulationParams.membranePressurePsi" class="w-full mt-1 px-2 py-1 border rounded bg-white" />
+      </div>
+      <div>
+        <span class="text-slate-500 block text-[11px]">Tasa Recuperación (%)</span>
+        <input type="number" [(ngModel)]="aiSimulationParams.recoveryRatePercentage" class="w-full mt-1 px-2 py-1 border rounded bg-white" />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      (click)="runAiInference()"
+      class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
+    >
+      Calcular Vida Útil Remanente (RUL)
+    </button>
+  </div>
+
+  <!-- Advertencia del Aislamiento de Anomalía Física sin romper la transacción -->
+  <div *ngIf="aiCircuitBreakerAnomalies.length > 0" class="p-5 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-900 space-y-2">
+    <div class="flex items-center gap-2 font-bold text-amber-800">
+      <span class="text-base">⚠️</span>
+      <span>Aislamiento de Anomalía: Cálculo Predictivo Suspendido por Seguridad</span>
+    </div>
+    <p class="text-[11px] text-amber-800 leading-relaxed">
+      El modelo detectó lecturas fuera del rango físico del agua. La operación del sistema no se interrumpió y se registró una traza en el log de auditoría interna.
+    </p>
+    <ul class="list-disc list-inside text-[11px] text-amber-900 font-mono space-y-0.5">
+      <li *ngFor="let an of aiCircuitBreakerAnomalies">{{ an }}</li>
+    </ul>
+  </div>
+
+  <!-- Resultado Exitoso de Predicción y Alerta Crítica -->
+  <div *ngIf="aiPredictionResult" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+      <div>
+        <h4 class="text-sm font-bold text-slate-800">Resultado de Inferencia del Modelo ONNX</h4>
+        <span class="text-[11px] text-slate-500">Confianza estadística: {{ (aiPredictionResult.confidence * 100).toFixed(0) }}%</span>
+      </div>
+      <span
+        [class]="
+          aiPredictionResult.criticalRiskAlert
+            ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
+            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        "
+        class="text-xs font-semibold px-3 py-1 rounded-full border"
+      >
+        {{ aiPredictionResult.criticalRiskAlert ? 'ALERTA: RIESGO DE FALLA CRÍTICA' : 'Operación Estable' }}
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
+        <span class="text-xs text-slate-500 font-medium">Vida Útil Remanente Estimada (RUL)</span>
+        <p class="text-3xl font-extrabold text-slate-900 mt-1 font-mono">
+          {{ aiPredictionResult.predictedRulDays }} <span class="text-sm font-normal text-slate-500">días</span>
+        </p>
+        <p class="text-[10px] text-slate-400 mt-1">Estimado para la membrana osmótica</p>
+      </div>
+
+      <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
+        <span class="text-xs text-slate-500 font-medium">Score de Riesgo de Avería</span>
+        <p
+          class="text-3xl font-extrabold mt-1 font-mono"
+          [class]="aiPredictionResult.criticalRiskAlert ? 'text-rose-600' : 'text-emerald-600'"
+        >
+          {{ (aiPredictionResult.failureRiskScore * 100).toFixed(1) }}%
+        </p>
+        <p class="text-[10px] text-slate-400 mt-1">Umbral crítico configurado: 75.0%</p>
+      </div>
+    </div>
+
+    <div *ngIf="aiPredictionResult.criticalRiskAlert" class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
+      <strong>Acción Preventiva Requerida:</strong> Se emitió notificación automática a la Gerencia y al técnico líder asignado. La orden preventiva para recambio de membrana ha sido programada con prioridad ALTA.
+    </div>
+  </div>
+</div>

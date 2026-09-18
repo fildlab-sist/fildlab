@@ -1,0 +1,42 @@
+// ------------------------------------------------------------------------------
+// MÓDULO PREDICTIVO (ML) Y AUDITORÍA DE PARÁMETROS (REQ-14, REQ-15, REQ-16)
+// ------------------------------------------------------------------------------
+
+model EquipmentPrediction {
+  id                String    @id @default(uuid())
+  equipmentId       String    @map("equipment_id")
+  workOrderId       String?   @map("work_order_id")
+  predictedRulDays  Int       @map("predicted_rul_days") // Vida Útil Remanente en días
+  failureRiskScore  Decimal   @map("failure_risk_score") @db.Decimal(5, 4) // 0.0000 a 1.0000
+  criticalRiskAlert Boolean   @default(false) @map("critical_risk_alert") // Supera umbral crítico (REQ-15)
+  confidenceScore   Decimal?  @map("confidence_score") @db.Decimal(5, 4)
+  calculatedAt      DateTime  @default(now()) @map("calculated_at")
+
+  // Relaciones
+  equipment Equipment  @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id])
+
+  @@map("equipment_predictions")
+}
+
+enum MlAuditErrorType {
+  OUT_OF_PHYSICAL_RANGE
+  INCOMPLETE_FEATURES
+  MODEL_INFERENCE_EXCEPTION
+}
+
+model MlAuditLog {
+  id            String           @id @default(uuid())
+  equipmentId   String           @map("equipment_id")
+  workOrderId   String?          @map("work_order_id")
+  inputFeatures Json             @map("input_features")
+  errorType     MlAuditErrorType @map("error_type")
+  errorDetails  String           @map("error_details") @db.Text
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  // Relaciones
+  equipment Equipment  @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id])
+
+  @@map("ml_audit_logs")
+}

@@ -1,0 +1,105 @@
+<div class="min-h-screen bg-slate-100 flex flex-col">
+  <!-- 1. Header Móvil Exclusivo de Campo (Samsung Galaxy A14) -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs px-4 py-2.5">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      
+      <!-- Identidad PWA Técnico -->
+      <div class="flex items-center gap-2.5">
+        <img
+          src="assets/images/fildlab-logo.png"
+          alt="Fildlab Logo"
+          class="h-8 w-auto object-contain rounded"
+          onerror="this.style.display='none'; document.getElementById('pwa-fb-logo').style.display='flex';"
+        />
+        <div
+          id="pwa-fb-logo"
+          style="display: none;"
+          class="w-8 h-8 rounded-lg bg-emerald-600 text-white font-bold text-sm items-center justify-center"
+        >
+          F
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-slate-900 text-xs sm:text-sm tracking-tight">FILDLAB CAMPO</span>
+          </div>
+          <p class="text-[10px] text-slate-500">Mauro Gutierrez</p>
+        </div>
+      </div>
+
+      <!-- Estado de Red y Sincronización -->
+      <div class="flex items-center gap-2">
+        <!-- Indicador Online / Offline Dinámico -->
+        <span
+          [class]="isOnline() ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'"
+          class="text-[11px] px-2.5 py-0.5 rounded-full border font-medium flex items-center gap-1.5 transition-colors"
+          [title]="isOnline() ? 'Conectado a Internet' : 'Sin conexión a Internet - Modo Offline Activo'"
+        >
+          <span class="w-1.5 h-1.5 rounded-full" [class]="isOnline() ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'"></span>
+          {{ isOnline() ? 'ONLINE' : 'OFFLINE' }}
+        </span>
+
+        <!-- Botón de Sync si hay pendientes -->
+        <button
+          *ngIf="syncEngine.pendingCount() > 0"
+          type="button"
+          (click)="manualSync()"
+          class="text-[10px] bg-sky-600 hover:bg-sky-700 text-white px-2 py-1 rounded-lg font-bold flex items-center gap-1 shadow-xs"
+        >
+          <span>Sincronizar ({{ syncEngine.pendingCount() }})</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner de Instalación (Solo si NO está instalada y NO fue omitida previamente) -->
+  <div
+    *ngIf="showInstallBanner() && !isStandalone()"
+    class="bg-slate-900 text-white p-3 px-4 shadow-md flex items-center justify-between gap-3 text-xs border-b border-slate-800"
+  >
+    <div class="flex items-center gap-2.5">
+      <img src="assets/icons/icon.svg" alt="App Icon" class="w-7 h-7 rounded-lg shadow-xs bg-white/10 p-0.5" />
+      <div>
+        <p class="font-bold text-xs">Instalar aplicación</p>
+        <p class="text-[10px] text-slate-400">Acceso directo y trabajo sin conexión</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="installPwa()"
+        class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors text-xs whitespace-nowrap"
+      >
+        Instalar
+      </button>
+      <button
+        type="button"
+        (click)="dismissInstallBanner()"
+        class="text-slate-400 hover:text-white text-sm px-1.5 font-bold"
+        title="Cerrar"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Banner Informativo para iPhone / iPad (iOS Safari) -->
+  <div
+    *ngIf="isIos() && !isStandalone() && showIosHint()"
+    class="bg-slate-900 text-white p-3 px-4 shadow-md flex items-center justify-between gap-3 text-xs border-b border-slate-700"
+  >
+    <span class="text-[11px] text-slate-300">
+      Para instalar en iOS: presione Compartir y luego Añadir a pantalla de inicio.
+    </span>
+    <button (click)="dismissIosHint()" class="text-slate-400 hover:text-white text-sm font-bold">✕</button>
+  </div>
+
+  <!-- 2. Contenedor de Trabajo de Campo del Técnico -->
+  <main class="max-w-4xl w-full mx-auto p-4 sm:p-6 flex-1">
+    <app-pwa-field-tab></app-pwa-field-tab>
+  </main>
+
+  <!-- 3. Footer Móvil -->
+  <footer class="bg-white border-t border-slate-200 py-3 text-center text-[10px] text-slate-400">
+    Fildlab Campo v1.0
+  </footer>
+</div>

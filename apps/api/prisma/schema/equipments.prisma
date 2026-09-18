@@ -1,0 +1,44 @@
+// ------------------------------------------------------------------------------
+// EQUIPOS DE TRATAMIENTO DE AGUA (REQ-14, REQ-16)
+// ------------------------------------------------------------------------------
+
+enum EquipmentType {
+  OSMOSIS_INVERSA
+  ABLANDADOR
+  FILTRO_MULTIMEDIA
+  DESIONIZADOR
+  SISTEMA_UV
+}
+
+enum EquipmentStatus {
+  OPERATIVO
+  MANTENIMIENTO_REQUERIDO
+  CRITICO
+  FUERA_DE_SERVICIO
+}
+
+model Equipment {
+  id                  String                @id @default(uuid())
+  serialNumber        String                @unique @map("serial_number")
+  branchId            String                @map("branch_id")
+  contractId          String                @map("contract_id")
+  equipmentType       EquipmentType         @map("equipment_type")
+  brand               String
+  model               String
+  membraneType        String?               @map("membrane_type")
+  resinLiters         Decimal?              @map("resin_liters") @db.Decimal(8, 2)
+  installationDate    DateTime              @map("installation_date")
+  lastMaintenanceDate DateTime?             @map("last_maintenance_date")
+  status              EquipmentStatus       @default(OPERATIVO)
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+
+  // Relaciones
+  branch      Branch                @relation(fields: [branchId], references: [id])
+  contract    Contract              @relation(fields: [contractId], references: [id])
+  workOrders  WorkOrder[]
+  predictions EquipmentPrediction[]
+  mlAuditLogs MlAuditLog[]
+
+  @@map("equipments")
+}

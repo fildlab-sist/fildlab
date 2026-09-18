@@ -1,0 +1,114 @@
+<div class="min-h-screen bg-slate-50 flex flex-col">
+  
+  <!-- 1. Barra de Navegación Gerencial Ejecutiva (HP ProBook 450 G9) -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo y Rol de Gerencia -->
+      <div class="flex items-center gap-3">
+        <img
+          src="assets/images/fildlab-logo.png"
+          alt="Fildlab Perú Logo"
+          class="h-9 w-auto object-contain rounded-md"
+          onerror="this.style.display='none'; document.getElementById('gerencia-fb-logo').style.display='flex';"
+        />
+        <div
+          id="gerencia-fb-logo"
+          style="display: none;"
+          class="w-9 h-9 rounded-xl bg-sky-700 text-white font-bold text-base items-center justify-center"
+        >
+          F
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-900 text-base">FILDLAB GERENCIA</span>
+            <span class="text-[10px] font-bold uppercase bg-sky-100 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
+              PANEL GERENCIAL
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 hidden sm:block">
+            Portal Central: Auditoría, Contratos SLA y Margen Real | Elva Acevedo Vargas
+          </p>
+        </div>
+      </div>
+
+      <!-- Navegación de Pestañas Gerenciales -->
+      <div class="flex items-center gap-3">
+        <nav class="hidden md:flex gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+          <button
+            type="button"
+            (click)="setActiveTab('BACKOFFICE')"
+            [class]="activeTab() === 'BACKOFFICE' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+            class="px-3.5 py-1.5 rounded-lg transition-all"
+          >
+            📊 Backoffice & Contratos
+          </button>
+          <button
+            type="button"
+            (click)="setActiveTab('BI_DASHBOARD')"
+            [class]="activeTab() === 'BI_DASHBOARD' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+            class="px-3.5 py-1.5 rounded-lg transition-all"
+          >
+            📈 BI Margen & SLA
+          </button>
+          <button
+            type="button"
+            (click)="setActiveTab('PREDICTIVE_AI')"
+            [class]="activeTab() === 'PREDICTIVE_AI' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+            class="px-3.5 py-1.5 rounded-lg transition-all"
+          >
+            🧠 IA Predictiva (RUL)
+          </button>
+        </nav>
+
+        <!-- Perfil Ejecutivo Conectado -->
+        <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="font-bold text-slate-800 hidden sm:inline">Elva Acevedo</span>
+          <span class="text-[10px] bg-sky-700 text-white font-bold px-1.5 py-0.5 rounded">GERENCIA</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navegación móvil de pestañas para pantallas estrechas -->
+    <div class="md:hidden flex border-t border-slate-200 bg-slate-50 overflow-x-auto text-xs font-semibold">
+      <button
+        type="button"
+        (click)="setActiveTab('BACKOFFICE')"
+        [class]="activeTab() === 'BACKOFFICE' ? 'text-sky-700 border-b-2 border-sky-700 bg-white' : 'text-slate-600'"
+        class="flex-1 py-2.5 px-3 text-center whitespace-nowrap"
+      >
+        📊 Backoffice
+      </button>
+      <button
+        type="button"
+        (click)="setActiveTab('BI_DASHBOARD')"
+        [class]="activeTab() === 'BI_DASHBOARD' ? 'text-sky-700 border-b-2 border-sky-700 bg-white' : 'text-slate-600'"
+        class="flex-1 py-2.5 px-3 text-center whitespace-nowrap"
+      >
+        📈 BI Margen
+      </button>
+      <button
+        type="button"
+        (click)="setActiveTab('PREDICTIVE_AI')"
+        [class]="activeTab() === 'PREDICTIVE_AI' ? 'text-sky-700 border-b-2 border-sky-700 bg-white' : 'text-slate-600'"
+        class="flex-1 py-2.5 px-3 text-center whitespace-nowrap"
+      >
+        🧠 IA RUL
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. Contenido Principal según Pestaña Activa -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+    <app-backoffice-tab *ngIf="activeTab() === 'BACKOFFICE'" [currentRole]="gerenciaRole"></app-backoffice-tab>
+    <app-bi-dashboard-tab *ngIf="activeTab() === 'BI_DASHBOARD'"></app-bi-dashboard-tab>
+    <app-predictive-ai-tab *ngIf="activeTab() === 'PREDICTIVE_AI'"></app-predictive-ai-tab>
+  </main>
+
+  <!-- 3. Pie de Página -->
+  <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500">
+    Fildlab Perú S.A.C. | SI_FILDLAB-2026 | Sistema Integral para Tratamiento de Agua
+  </footer>
+</div>

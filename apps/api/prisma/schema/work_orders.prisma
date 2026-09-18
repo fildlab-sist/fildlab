@@ -1,0 +1,141 @@
+// ------------------------------------------------------------------------------
+// ÓRDENES DE TRABAJO, FIRMA DIGITAL E INMUTABILIDAD (REQ-05 a REQ-10, RN-02, RN-04)
+// ------------------------------------------------------------------------------
+
+enum ServiceType {
+  PREVENTIVO
+  CORRECTIVO
+  EMERGENCIA
+  INSTALACION
+}
+
+enum OrderStatus {
+  PENDIENTE
+  EN_PROCESO
+  CERRADA_CAMPO
+  SINCRONIZADA
+  LIQUIDADA_APROBADA
+  ANULADA
+}
+
+enum WorkOrderSpareStatus {
+  UTILIZADO_CAMPO
+  COMPROMETIDO_EN_TRANSITO
+  LIQUIDADO_DESCONTADO
+}
+
+model WorkOrder {
+  id                   String      @id @default(uuid())
+  orderCode            String      @unique @map("order_code")
+  clientId             String      @map("client_id")
+  branchId             String      @map("branch_id")
+  equipmentId          String      @map("equipment_id")
+  contractId           String      @map("contract_id")
+  assignedTechnicianId String      @map("assigned_technician_id")
+  serviceType          ServiceType @map("service_type")
+  status               OrderStatus @default(PENDIENTE)
+
+  // Control de SLA (REQ-12)
+  scheduledDate            DateTime  @map("scheduled_date")
+  maxAllowedCompletionDate DateTime  @map("max_allowed_completion_date")
+  startedAt                DateTime? @map("started_at")
+  completedAt              DateTime? @map("completed_at")
+  slaBreached              Boolean   @default(false) @map("sla_breached")
+  slaDelayMinutes          Int       @default(0) @map("sla_delay_minutes")
+
+  // Parámetros Físico-Químicos y Volumétricos Oficiales de Campo
+  diagnosis              String?   @db.Text
+  workPerformed          String?   @map("work_performed") @db.Text
+  observations           String?   @db.Text
+  inletTdsPpm            Decimal?  @map("inlet_tds_ppm") @db.Decimal(8, 2)
+  postMembraneTdsPpm     Decimal?  @map("post_membrane_tds_ppm") @db.Decimal(8, 2)
+  finalProductTdsPpm     Decimal?  @map("final_product_tds_ppm") @db.Decimal(8, 2)
+  ph                     Decimal?  @map("ph") @db.Decimal(4, 2)
+  conductivityUs         Decimal?  @map("conductivity_us") @db.Decimal(8, 2)
+  resistivityMohm        Decimal?  @map("resistivity_mohm") @db.Decimal(8, 2)
+  networkConsumedLiters  Decimal?  @map("network_consumed_liters") @db.Decimal(10, 2)
+  totalPureWaterLiters   Decimal?  @map("total_pure_water_liters") @db.Decimal(10, 2)
+  recoveryRatePercentage Decimal?  @map("recovery_rate_percentage") @db.Decimal(5, 2)
+  outletTdsPpm           Decimal?  @map("outlet_tds_ppm") @db.Decimal(8, 2)
+  inletConductivityUs    Decimal?  @map("inlet_conductivity_us") @db.Decimal(8, 2)
+  outletConductivityUs   Decimal?  @map("outlet_conductivity_us") @db.Decimal(8, 2)
+  inletPh                Decimal?  @map("inlet_ph") @db.Decimal(4, 2)
+  outletPh               Decimal?  @map("outlet_ph") @db.Decimal(4, 2)
+  inletPressurePsi       Decimal?  @map("inlet_pressure_psi") @db.Decimal(6, 2)
+  membranePressurePsi    Decimal?  @map("membrane_pressure_psi") @db.Decimal(6, 2)
+
+  // Costeo de Mano de Obra para BI (REQ-11)
+  technicianWorkHours  Decimal @default(0.00) @map("technician_work_hours") @db.Decimal(6, 2)
+  technicianHourlyRate Decimal @default(35.00) @map("technician_hourly_rate") @db.Decimal(8, 2)
+
+  // Firma Digital y Metadatos Legales (Ley N° 27269, REQ-09, REQ-10, RN-02)
+  signatureImageUrl   String?   @map("signature_image_url")
+  signatureVectorJson Json?     @map("signature_vector_json")
+  signerFullName      String?   @map("signer_full_name")
+  signerDniOrRuc      String?   @map("signer_dni_or_ruc")
+  signerRole          String?   @map("signer_role")
+  gpsLatitude         Decimal?  @map("gps_latitude") @db.Decimal(10, 8)
+  gpsLongitude        Decimal?  @map("gps_longitude") @db.Decimal(11, 8)
+  gpsAccuracyMeters   Decimal?  @map("gps_accuracy_meters") @db.Decimal(6, 2)
+  signatureTimestamp  DateTime? @map("signature_timestamp")
+
+  // Inmutabilidad y Auditoría (RN-04)
+  isLocked      Boolean   @default(false) @map("is_locked")
+  integrityHash String?   @map("integrity_hash")
+
+  // Liquidación Gerencial (RN-03 Fase 3)
+  liquidatedAt     DateTime? @map("liquidated_at")
+  liquidatedById   String?   @map("liquidated_by_id")
+  liquidationNotes String?   @map("liquidation_notes")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  client             Client                @relation(fields: [clientId], references: [id])
+  branch             Branch                @relation(fields: [branchId], references: [id])
+  equipment          Equipment             @relation(fields: [equipmentId], references: [id])
+  contract           Contract              @relation(fields: [contractId], references: [id])
+  assignedTechnician User                  @relation("TechnicianOrders", fields: [assignedTechnicianId], references: [id])
+  liquidatedBy       User?                 @relation("LiquidatedByGerencia", fields: [liquidatedById], references: [id])
+  sparesUsed         WorkOrderSpare[]
+  addendums          WorkOrderAddendum[]
+  predictions        EquipmentPrediction[]
+  mlAuditLogs        MlAuditLog[]
+  stockMovements     StockMovement[]
+
+  @@map("work_orders")
+}
+
+model WorkOrderSpare {
+  id          String               @id @default(uuid())
+  workOrderId String               @map("work_order_id")
+  sparePartId String               @map("spare_part_id")
+  quantity    Int
+  unitCost    Decimal              @map("unit_cost") @db.Decimal(10, 2)
+  status      WorkOrderSpareStatus @default(COMPROMETIDO_EN_TRANSITO)
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  // Relaciones
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  sparePart SparePart @relation(fields: [sparePartId], references: [id], onDelete: Restrict)
+
+  @@map("work_order_spares")
+}
+
+model WorkOrderAddendum {
+  id                String   @id @default(uuid())
+  workOrderId       String   @map("work_order_id")
+  addendumCode      String   @unique @map("addendum_code")
+  createdById       String   @map("created_by_id")
+  reason            String   @db.Text
+  correctionDetails String   @map("correction_details") @db.Text
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("AddendumsCreatedBy", fields: [createdById], references: [id])
+
+  @@map("work_order_addendums")
+}

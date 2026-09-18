@@ -1,0 +1,48 @@
+// ------------------------------------------------------------------------------
+// CONTRATOS Y CONDICIONES DE SLA (REQ-02, REQ-03, RN-01, REQ-11)
+// ------------------------------------------------------------------------------
+
+enum ContractStatus {
+  ACTIVO
+  SUSPENDIDO
+  VENCIDO
+  ANULADO
+}
+
+model Contract {
+  id             String         @id @default(uuid())
+  contractNumber String         @unique @map("contract_number") // ej. "CTR-2026-001"
+  clientId       String         @map("client_id")
+  startDate      DateTime       @map("start_date")
+  endDate        DateTime       @map("end_date")
+  monthlyFee     Decimal        @map("monthly_fee") @db.Decimal(12, 2) // Ingreso mensual pactado (REQ-11)
+  status         ContractStatus @default(ACTIVO)
+  createdById    String         @map("created_by_id") // Solo GERENCIA (RN-01)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  // Relaciones
+  client     Client      @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  createdBy  User        @relation("ContractsCreatedBy", fields: [createdById], references: [id])
+  slaPolicy  SlaPolicy?
+  equipments Equipment[]
+  workOrders WorkOrder[]
+
+  @@map("contracts")
+}
+
+model SlaPolicy {
+  id                  String   @id @default(uuid())
+  contractId          String   @unique @map("contract_id")
+  emergencyMaxHours   Int      @default(4) @map("emergency_max_hours")
+  correctiveMaxHours  Int      @default(24) @map("corrective_max_hours")
+  preventiveMaxDays   Int      @default(30) @map("preventive_max_days")
+  penaltyPerHourDelay Decimal  @default(0.00) @map("penalty_per_hour_delay") @db.Decimal(10, 2)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("sla_policies")
+}

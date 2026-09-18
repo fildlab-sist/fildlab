@@ -1,0 +1,86 @@
+<div class="space-y-6">
+  <!-- Controles de Periodo -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+    <div>
+      <h3 class="text-sm font-bold text-slate-800">Auditoría Financiera por Contrato en Tiempo Real</h3>
+      <p class="text-xs text-slate-500">Cálculo de Margen = Ingreso Mensual - (Repuestos + Horas Técnico)</p>
+    </div>
+    <div class="flex items-center gap-2 text-xs">
+      <button
+        type="button"
+        (click)="toggleEmptyPeriod()"
+        class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors"
+      >
+        {{ isPeriodEmpty ? 'Restaurar Indicadores' : 'Alternar Vista Sin Datos' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Renderizado Condicional: Estado Vacío REQ-13 -->
+  <div *ngIf="isPeriodEmpty">
+    <app-empty-state
+      title="Sin datos disponibles para el periodo"
+      description="No se registraron órdenes de servicio técnicas ni facturación en el rango de fechas seleccionado."
+      actionLabel="Reiniciar Filtros"
+    ></app-empty-state>
+  </div>
+
+  <!-- Tablero BI con Datos -->
+  <div *ngIf="!isPeriodEmpty" class="space-y-6">
+    <!-- Tarjetas KPI Globales -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 font-medium">Ingresos Facturados</span>
+        <p class="text-2xl font-bold text-slate-900 mt-1">S/. 10,700.00</p>
+        <span class="text-[11px] text-emerald-600 mt-1 inline-block">3 contratos activos</span>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 font-medium">Costos Operativos (Repuestos + Mano de Obra)</span>
+        <p class="text-2xl font-bold text-slate-900 mt-1">S/. 5,460.00</p>
+        <span class="text-[11px] text-slate-500 mt-1 inline-block">Repuestos: S/. 4,270 | M.O.: S/. 1,190</span>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-xs text-slate-500 font-medium">Margen Neto Real Global</span>
+        <p class="text-2xl font-bold text-emerald-600 mt-1">S/. 5,240.00 (49.0%)</p>
+        <span class="text-[11px] text-amber-600 mt-1 inline-block">1 alerta de SLA activa</span>
+      </div>
+    </div>
+
+    <!-- Tabla Detallada de Rentabilidad y SLA por Contrato -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-100">
+        <h4 class="text-sm font-bold text-slate-800">Desglose Financiero y Semáforo de SLA por Contrato</h4>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-3">Contrato</th>
+              <th class="px-4 py-3">Cliente</th>
+              <th class="px-4 py-3">Ingreso Mensual</th>
+              <th class="px-4 py-3">Costo Repuestos</th>
+              <th class="px-4 py-3">Costo Horas Técnico</th>
+              <th class="px-4 py-3 font-bold text-slate-800">Margen Neto</th>
+              <th class="px-4 py-3">Cumplimiento SLA</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let c of contractsProfitability" class="hover:bg-slate-50/60">
+              <td class="px-4 py-3.5 font-semibold text-slate-900">{{ c.code }}</td>
+              <td class="px-4 py-3.5 text-slate-700">{{ c.client }}</td>
+              <td class="px-4 py-3.5 font-mono">S/. {{ c.monthlyRevenue.toFixed(2) }}</td>
+              <td class="px-4 py-3.5 font-mono text-slate-600">S/. {{ c.sparesCost.toFixed(2) }}</td>
+              <td class="px-4 py-3.5 font-mono text-slate-600">S/. {{ c.laborCost.toFixed(2) }}</td>
+              <td class="px-4 py-3.5 font-mono font-bold" [class]="c.netMargin > 1500 ? 'text-emerald-600' : 'text-amber-600'">
+                S/. {{ c.netMargin.toFixed(2) }} ({{ c.marginPercent }}%)
+              </td>
+              <td class="px-4 py-3.5">
+                <app-sla-badge [slaBreached]="c.slaBreached" [delayMinutes]="c.slaDelayMinutes"></app-sla-badge>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

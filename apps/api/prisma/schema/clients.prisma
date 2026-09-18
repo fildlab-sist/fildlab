@@ -1,0 +1,44 @@
+// ------------------------------------------------------------------------------
+// CLIENTES CORPORATIVOS Y SEDES CLÍNICAS (REQ-01)
+// ------------------------------------------------------------------------------
+
+model Client {
+  id                  String    @id @default(uuid())
+  ruc                 String    @unique // 11 dígitos validado por algoritmo Módulo 11 SUNAT
+  businessName        String    @map("business_name") // Razón Social
+  commercialName      String?   @map("commercial_name")
+  legalRepresentative String?   @map("legal_representative")
+  contactEmail        String    @map("contact_email")
+  contactPhone        String    @map("contact_phone")
+  fiscalAddress       String    @map("fiscal_address")
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Relaciones
+  branches   Branch[]
+  contracts  Contract[]
+  workOrders WorkOrder[]
+
+  @@map("clients")
+}
+
+model Branch {
+  id            String      @id @default(uuid())
+  clientId      String      @map("client_id")
+  name          String      // ej. "Sede Central", "Clínica Sánchez Ferrer - Hemodiálisis"
+  address       String
+  contactPerson String?     @map("contact_person")
+  contactPhone  String?     @map("contact_phone")
+  latitude      Decimal?    @db.Decimal(10, 8)
+  longitude     Decimal?    @db.Decimal(11, 8)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relaciones
+  client     Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  equipments Equipment[]
+  workOrders WorkOrder[]
+
+  @@map("branches")
+}

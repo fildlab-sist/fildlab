@@ -1,0 +1,152 @@
+<div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+    
+    <!-- Encabezado y Selector de Subpestaña -->
+    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div>
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span>📋</span> Gestión de Contratos y Clientes Corporativos
+        </h3>
+        <p class="text-xs text-slate-500">Módulo exclusivo de Gerencia General</p>
+      </div>
+      <button type="button" (click)="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+    </div>
+
+    <!-- Navegación entre Pestañas -->
+    <div class="flex gap-2 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+      <button
+        type="button"
+        (click)="activeTab = 'contract'; errorMessage = null"
+        [class]="activeTab === 'contract' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+        class="flex-1 py-2 rounded-lg transition-all text-center"
+      >
+        1. Emitir Contrato y SLA
+      </button>
+      <button
+        type="button"
+        (click)="activeTab = 'client'; errorMessage = null"
+        [class]="activeTab === 'client' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+        class="flex-1 py-2 rounded-lg transition-all text-center"
+      >
+        2. Registrar Cliente Corporativo
+      </button>
+    </div>
+
+    <!-- Feedback Descriptivo de Error (REQ-03) -->
+    <div *ngIf="errorMessage" class="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-start gap-2 animate-shake">
+      <span class="text-base font-bold text-rose-600">⚠️</span>
+      <div>
+        <p class="font-bold text-rose-900">Validación Rechazada</p>
+        <p class="text-rose-700 mt-0.5">{{ errorMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Feedback de Éxito -->
+    <div *ngIf="successMessage" class="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+      <span class="text-base font-bold text-emerald-600">✓</span>
+      <p class="font-medium">{{ successMessage }}</p>
+    </div>
+
+    <!-- 1. PESTAÑA: EMISIÓN DE CONTRATO Y SLA (REQ-02, REQ-03) -->
+    <div *ngIf="activeTab === 'contract'" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Cliente Corporativo *</label>
+          <select [(ngModel)]="contractClientId" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg bg-white">
+            <option value="">-- Seleccione una Clínica / Hospital --</option>
+            <option *ngFor="let c of clients" [value]="c.id">{{ c.businessName }} (RUC: {{ c.ruc }})</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Código de Contrato *</label>
+          <input type="text" [(ngModel)]="contractNumber" placeholder="ej. CTR-2026-003" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" />
+        </div>
+      </div>
+
+      <!-- Fechas de Inicio y Término (REQ-02, REQ-03) -->
+      <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+        <h4 class="text-xs font-bold text-slate-800 mb-2">Vigencia del Servicio</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-slate-600 mb-1">Fecha Inicio *</label>
+            <input type="date" [(ngModel)]="contractStartDate" class="w-full text-xs px-3 py-1.5 border border-slate-300 rounded-lg bg-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-600 mb-1">Fecha Término *</label>
+            <input type="date" [(ngModel)]="contractEndDate" class="w-full text-xs px-3 py-1.5 border border-slate-300 rounded-lg bg-white" />
+          </div>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-1.5">La fecha de término debe ser posterior a la fecha de inicio.</p>
+      </div>
+
+      <!-- Cláusulas Financieras y SLA -->
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Cuota Mensual (S/.) *</label>
+          <input type="number" [(ngModel)]="contractMonthlyFee" class="w-full text-xs px-3 py-1.5 border border-slate-300 rounded-lg font-bold text-slate-900" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Max Horas SLA (Emergencia) *</label>
+          <input type="number" [(ngModel)]="contractSlaHours" class="w-full text-xs px-3 py-1.5 border border-slate-300 rounded-lg font-bold text-sky-700" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Penalidad (S/./Hora)</label>
+          <input type="number" [(ngModel)]="contractPenaltyPerHour" class="w-full text-xs px-3 py-1.5 border border-slate-300 rounded-lg font-bold text-rose-700" />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" (click)="closeModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancelar</button>
+        <button type="button" (click)="submitContract()" class="px-5 py-2 bg-fildlab-700 hover:bg-fildlab-800 text-white rounded-xl text-xs font-bold shadow-xs">Guardar y Emitir Contrato</button>
+      </div>
+    </div>
+
+    <!-- 2. PESTAÑA: REGISTRO DE CLIENTE CORPORATIVO (REQ-01) -->
+    <div *ngIf="activeTab === 'client'" class="space-y-4">
+      <!-- Input de RUC con Validación SUNAT Módulo 11 en Vivo -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">RUC Corporativo (11 Dígitos SUNAT) *</label>
+        <div class="relative">
+          <input
+            type="text"
+            [ngModel]="clientRuc"
+            (ngModelChange)="onRucInput($event)"
+            maxlength="11"
+            placeholder="Ingrese 11 dígitos ej. 20612493821"
+            class="w-full text-xs px-3 py-2 border rounded-lg font-mono tracking-wider"
+            [class]="rucValidation.isValid ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-300'"
+          />
+          <div class="absolute right-3 top-2.5">
+            <span *ngIf="rucValidation.isValid" class="text-xs text-emerald-600 font-bold">✓ Válido SUNAT</span>
+            <span *ngIf="!rucValidation.isValid && clientRuc.length > 0" class="text-xs text-rose-500 font-semibold">✗ Inválido</span>
+          </div>
+        </div>
+        <p class="text-[10px] mt-1" [class]="rucValidation.isValid ? 'text-emerald-600' : 'text-slate-400'">
+          {{ rucValidation.message || 'El RUC debe comenzar con 10, 15, 16, 17 o 20 y tener dígito fiscal verificado.' }}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Razón Social *</label>
+          <input type="text" [(ngModel)]="clientBusinessName" placeholder="ej. Clínica San Pablo S.A.C." class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Sede / Área de Tratamiento</label>
+          <input type="text" [(ngModel)]="clientBranch" placeholder="ej. Pabellón Hemodiálisis" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Dirección Fiscal / Sede</label>
+        <input type="text" [(ngModel)]="clientFiscalAddress" placeholder="Av. Los Laureles 120, Trujillo" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg" />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" (click)="closeModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancelar</button>
+        <button type="button" (click)="submitClient()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs">Registrar Cliente Corporativo</button>
+      </div>
+    </div>
+
+  </div>
+</div>

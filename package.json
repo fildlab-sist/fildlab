@@ -1,0 +1,29 @@
+{
+  "name": "fildlab-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de Información para la gestión integral de equipos de tratamiento de agua en Fildlab Perú S.A.C.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace=@fildlab/api",
+    "dev:web": "npm run start --workspace=@fildlab/web",
+    "dev:pwa": "npm run start --workspace=@fildlab/pwa",
+    "build:all": "npm run build --workspaces",
+    "prisma:generate": "npm run prisma:generate --workspace=@fildlab/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace=@fildlab/api",
+    "test:all": "npm run test --workspaces"
+  },
+  "keywords": [
+    "fildlab",
+    "water-treatment",
+    "pwa",
+    "clean-architecture",
+    "nestjs",
+    "angular"
+  ],
+  "author": "Fildlab Dev Team (Mauro Gutierrez, Jorge Espejo, Xander Gamboa)",
+  "license": "UNLICENSED"
+}
