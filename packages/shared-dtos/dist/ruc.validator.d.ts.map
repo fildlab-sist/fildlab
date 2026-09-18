@@ -1,0 +1,1 @@
+{"version":3,"file":"ruc.validator.d.ts","sourceRoot":"","sources":["../src/ruc.validator.ts"],"names":[],"mappings":"AAAA;;GAEG;AAEH,MAAM,WAAW,mBAAmB;IAClC,OAAO,EAAE,OAAO,CAAC;IACjB,OAAO,CAAC,EAAE,MAAM,CAAC;CAClB;AAED,wBAAgB,gBAAgB,CAAC,GAAG,EAAE,MAAM,GAAG,IAAI,GAAG,SAAS,GAAG,mBAAmB,CAsCpF"}

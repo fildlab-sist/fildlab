@@ -8,6 +8,7 @@ coverage/
 
 # Compilación y Builds
 dist/
+!packages/shared-dtos/dist/
 build/
 .angular/
 out-tsc/
